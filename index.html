@@ -1,0 +1,873 @@
+<!--
+.-. .-. .----.     .---. .-. .-..----.  .--.  .---. .-..-. .-. .---.                            
+|  `| |/  {}  \   /  ___}| {_} || {_   / {} \{_   _}| ||  `| |/   __}                           
+| |\  |\      /   \     }| { } || {__ /  /\  \ | |  | || |\  |\  {_ }                           
+`-' `-' `----'     `---' `-' `-'`----'`-'  `-' `-'  `-'`-' `-' `---'                            
+ .---. .-.    .----.  .----..----.   .----. .----..-. .-.    .---.  .----.  .----. .-.    .----.
+/  ___}| |   /  {}  \{ {__  | {_     | {}  \| {_  | | | |   {_   _}/  {}  \/  {}  \| |   { {__  
+\     }| `--.\      /.-._} }| {__    |     /| {__ \ \_/ /     | |  \      /\      /| `--..-._} }
+ `---' `----' `----' `----' `----'   `----' `----' `---'      `-'   `----'  `----' `----'`----' 
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crack the Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+  --room: #120d08;
+  --panel: #241a10;
+  --panel-edge: #6b4a24;
+  --amber: #f2b45c;
+  --amber-dim: #a9875c;
+  --ember: #e86a4a;
+  --ink: #f4e3c6;
+  --muted: #7d6448;
+  --key: #2c2014;
+  --key-used: #1c150d;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --room: #e9dcc3;
+    --panel: #f6ecd8;
+    --panel-edge: #b88a4f;
+    --amber: #8a4f0c;
+    --amber-dim: #8a6a43;
+    --ember: #b3351c;
+    --ink: #2a1c0c;
+    --muted: #a68a66;
+    --key: #fbf4e6;
+    --key-used: #e6d8bf;
+  }
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --room: #e9dcc3; --panel: #f6ecd8; --panel-edge: #b88a4f; --amber: #8a4f0c; --amber-dim: #8a6a43;
+  --ember: #b3351c; --ink: #2a1c0c; --muted: #a68a66; --key: #fbf4e6; --key-used: #e6d8bf;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--room);
+  color: var(--ink);
+  font-family: "Oswald", "Arial Narrow", system-ui, sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.phone {
+  position: relative;
+  width: 100%; max-width: 860px;
+  background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--panel) 85%, var(--amber) 6%), var(--panel) 70%);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  box-shadow: inset 0 0 90px color-mix(in srgb, var(--room) 70%, transparent), 0 0 0 1px color-mix(in srgb, var(--panel-edge) 30%, transparent);
+  padding: clamp(16px, 4vw, 36px);
+  overflow: hidden;
+}
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.mistakes { display: flex; align-items: center; gap: 12px; color: var(--amber); font-size: 1.15rem; letter-spacing: .04em; }
+.pips { display: flex; gap: 6px; }
+.pip { width: 11px; height: 11px; border: 1.5px solid var(--amber-dim); }
+.pip.hit { background: var(--ember); border-color: var(--ember); }
+.line { min-width: 220px; }
+.line-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; color: var(--amber-dim); font-size: 1.15rem; letter-spacing: .04em; }
+.line-row time { color: var(--ink); font-family: "Courier Prime", monospace; font-size: 1.3rem; }
+.line-row time.low { color: var(--ember); }
+.bar { height: 3px; background: color-mix(in srgb, var(--muted) 40%, transparent); margin-top: 8px; }
+.bar span { display: block; height: 100%; background: var(--amber); transition: width 1s linear; }
+.clue { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 26px 0 0; }
+.photo {
+  background: color-mix(in srgb, var(--room) 60%, var(--panel));
+  border: 1px solid var(--panel-edge); border-radius: 8px;
+  padding: 14px 26px; font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1.1; letter-spacing: .12em;
+  box-shadow: inset 0 0 30px color-mix(in srgb, var(--room) 70%, transparent);
+}
+.photo.has-img { padding: 0; width: 200px; height: 200px; overflow: hidden; }
+.photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.when { color: var(--amber-dim); font-family: "Courier Prime", monospace; font-size: .95rem; margin: 0; }
+.hint-btn { background: none; border: 0; color: var(--amber); font: 400 1rem "Oswald", sans-serif; text-decoration: underline; cursor: pointer; padding: 4px 8px; }
+.hint-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.hint { color: var(--ink); font-family: "Courier Prime", monospace; font-size: .95rem; margin: 0; text-align: center; max-width: 46ch; line-height: 1.45; }
+
+.message {
+  display: flex; flex-wrap: wrap; justify-content: center; align-content: center;
+  column-gap: clamp(14px, 3vw, 30px); row-gap: 18px;
+  min-height: 150px; margin: 22px 0 28px;
+}
+.word { display: flex; align-items: flex-end; }
+.cell {
+  display: flex; flex-direction: column; align-items: center;
+  width: clamp(24px, 5.2vw, 44px); margin: 0 2px;
+  background: none; border: 0; padding: 4px 0 0; color: inherit; font: inherit; cursor: pointer;
+  border-radius: 3px;
+}
+.cell .ch {
+  height: clamp(30px, 6vw, 50px); display: flex; align-items: center; justify-content: center;
+  font-size: clamp(1.4rem, 4.4vw, 2.4rem); font-weight: 500; color: var(--amber);
+  width: 100%; border-bottom: 1.5px solid color-mix(in srgb, var(--muted) 70%, transparent);
+}
+.cell .ch:empty::before { content: "·"; color: var(--muted); font-size: 1.2rem; }
+.cell .num { font-family: "Courier Prime", monospace; font-size: clamp(.72rem, 1.9vw, .95rem); color: var(--amber-dim); margin-top: 6px; }
+.cell.done .num { color: var(--muted); }
+.cell.same .ch { border-bottom-color: var(--amber); }
+.cell.active { background: color-mix(in srgb, var(--amber) 22%, transparent); }
+.cell.active .ch { border-bottom: 2px solid var(--amber); }
+.cell:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.cell.flash .ch { animation: flash .45s; }
+@keyframes flash { 0%,100% { color: var(--amber); } 40% { color: var(--ember); transform: translateX(-3px); } 70% { transform: translateX(3px); } }
+.punct { font-size: clamp(1.4rem, 4.4vw, 2.4rem); color: var(--amber); align-self: flex-start; padding-top: clamp(4px, 1vw, 10px); margin-left: 1px; }
+
+.keys { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.row { display: flex; gap: 6px; justify-content: center; width: 100%; }
+.key {
+  flex: 0 1 54px; min-width: 0; height: clamp(42px, 9vw, 58px);
+  background: var(--key); color: var(--ink);
+  border: 1px solid var(--panel-edge); border-radius: 6px;
+  font: 500 clamp(1rem, 3.2vw, 1.3rem) "Oswald", sans-serif; cursor: pointer;
+}
+.key:hover:not(:disabled) { border-color: var(--amber); }
+.key:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.key:disabled { background: var(--key-used); color: var(--muted); border-color: transparent; cursor: default; }
+.key.wrong:disabled { background: var(--key); border-color: color-mix(in srgb, var(--ember) 60%, transparent); color: var(--ember); text-decoration: line-through; }
+
+.overlay {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--panel) 92%, transparent); padding: 24px; text-align: center;
+}
+.overlay.show { display: flex; }
+.card { max-width: 560px; }
+.card h2 { margin: 0 0 6px; font-weight: 500; font-size: clamp(1.6rem, 5vw, 2.3rem); color: var(--amber); }
+.card .who { font-family: "Courier Prime", monospace; color: var(--amber-dim); margin: 0 0 22px; }
+.card blockquote { margin: 0 0 26px; font-family: "Courier Prime", monospace; font-size: clamp(1.05rem, 3vw, 1.3rem); line-height: 1.55; color: var(--ink); }
+.card .tally { color: var(--amber-dim); margin: 0 0 22px; font-size: 1rem; }
+.btn {
+  background: var(--amber); color: var(--room); border: 0; border-radius: 6px;
+  font: 500 1.15rem "Oswald", sans-serif; padding: 12px 28px; cursor: pointer; letter-spacing: .03em;
+}
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.intro p { font-family: "Courier Prime", monospace; line-height: 1.6; color: var(--ink); margin: 0 0 14px; text-align: left; }
+
+@media (prefers-reduced-motion: reduce) { .cell.flash .ch { animation: none; } .bar span { transition: none; } }
+
+.phone { min-height: min(720px, calc(100vh - 32px)); }
+.nav { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.link { background: none; border: 0; color: var(--amber-dim); font: 400 1rem "Oswald", sans-serif; cursor: pointer; padding: 4px 2px; text-decoration: underline; text-underline-offset: 3px; }
+.link:hover { color: var(--amber); }
+.link:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.overlay { overflow-y: auto; align-items: flex-start; background: var(--panel); }
+.overlay .card { margin: auto; width: 100%; }
+.step-count { font-family: "Courier Prime", monospace; color: var(--amber-dim); margin: 0 0 8px; }
+.demo { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 18px 0 20px; min-height: 150px; justify-content: center; }
+.demo-row { display: flex; align-items: flex-end; justify-content: center; gap: 4px; flex-wrap: wrap; }
+.d { display: flex; flex-direction: column; align-items: center; width: 38px; padding-top: 4px; border-radius: 3px; }
+.d b { height: 40px; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 500; color: var(--amber); border-bottom: 1.5px solid color-mix(in srgb, var(--muted) 70%, transparent); }
+.d i { font-style: normal; font-family: "Courier Prime", monospace; font-size: .85rem; color: var(--amber-dim); margin-top: 5px; }
+.d.pick { background: color-mix(in srgb, var(--amber) 22%, transparent); }
+.d.pick b, .d.twin b { border-bottom: 2px solid var(--amber); }
+.d.new b { color: var(--ink); }
+.arrow { font-family: "Courier Prime", monospace; color: var(--amber-dim); font-size: .95rem; }
+.kcap { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 46px; background: var(--key); color: var(--ink); border: 1px solid var(--panel-edge); border-radius: 6px; font-size: 1.2rem; font-weight: 500; }
+.kcap.bad { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 60%, transparent); text-decoration: line-through; }
+.demo .pips { margin-left: 4px; }
+.demo .photo { font-size: 2.2rem; padding: 10px 20px; }
+.tut-text { font-family: "Courier Prime", monospace; line-height: 1.6; color: var(--ink); margin: 0 auto 22px; max-width: 44ch; min-height: 6.4em; }
+.tut-actions { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+.btn.ghost { background: none; color: var(--amber); border: 1px solid var(--panel-edge); }
+.dots { display: flex; justify-content: center; gap: 8px; margin: 0 0 18px; }
+.dots span { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--muted) 60%, transparent); }
+.dots span.on { background: var(--amber); }
+.topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 22px 0 18px; }
+.topic { background: var(--key); border: 1px solid var(--panel-edge); border-radius: 10px; padding: 20px 14px; color: var(--ink); cursor: pointer; font-family: "Oswald", sans-serif; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.topic:hover { border-color: var(--amber); }
+.topic:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.topic .ico { font-size: 2.4rem; line-height: 1.1; }
+.topic .name { font-size: 1.35rem; font-weight: 500; color: var(--amber); }
+.topic .sub { font-family: "Courier Prime", monospace; font-size: .85rem; color: var(--amber-dim); }
+.end-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+.field { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 22px 0 8px; }
+.field input {
+  width: min(320px, 100%); padding: 12px 14px; text-align: center;
+  background: var(--key); color: var(--ink); border: 1px solid var(--panel-edge); border-radius: 6px;
+  font: 500 1.3rem "Oswald", sans-serif; letter-spacing: .03em;
+}
+.field input:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.note { font-family: "Courier Prime", monospace; color: var(--amber-dim); font-size: .9rem; margin: 10px 0 0; min-height: 1.3em; }
+.note.bad { color: var(--ember); }
+.points { font-size: clamp(1.8rem, 6vw, 2.6rem); color: var(--amber); font-weight: 500; margin: 0 0 4px; }
+.points-detail { font-family: "Courier Prime", monospace; color: var(--amber-dim); margin: 0 0 20px; font-size: .95rem; }
+.topic:disabled { cursor: default; border-color: transparent; background: var(--key-used); }
+.topic:disabled .name { color: var(--muted); }
+.topic .sub b { color: var(--ink); font-weight: 700; }
+.rows { list-style: none; margin: 0 auto 18px; padding: 0; max-width: 460px; text-align: left; font-family: "Courier Prime", monospace; }
+.rows li { display: flex; justify-content: space-between; gap: 14px; padding: 7px 4px; border-bottom: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); color: var(--ink); }
+.rows li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rows li span:last-child { color: var(--amber); flex: none; }
+.rows li.me { background: color-mix(in srgb, var(--amber) 16%, transparent); }
+.rows li .rank { color: var(--amber-dim); margin-right: 8px; }
+.link-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+</style>
+</head>
+<body>
+<main class="phone" id="phone">
+  <div class="nav">
+    <button class="link" id="quitBtn">End topic</button>
+    <span class="when" id="progress"></span>
+    <button class="link" id="helpBtn">How to play</button>
+  </div>
+  <div class="top">
+    <div class="mistakes">Mistakes <div class="pips" id="pips"></div></div>
+    <div class="line">
+      <div class="line-row"><span>Time left</span><time id="clock">03:00</time></div>
+      <div class="bar"><span id="bar" style="width:100%"></span></div>
+    </div>
+  </div>
+  <div class="clue">
+    <div class="photo" id="photo" role="img" aria-label="Picture clue"></div>
+    <p class="when" id="when"></p>
+    <button class="hint-btn" id="hintBtn">Show a written hint</button>
+    <p class="hint" id="hint" hidden></p>
+  </div>
+  <div class="message" id="message" aria-live="polite"></div>
+  <div class="keys" id="keys"></div>
+
+  <div class="overlay" id="tutorial">
+    <div class="card">
+      <p class="step-count" id="tutCount"></p>
+      <h2 id="tutTitle"></h2>
+      <div class="demo" id="tutDemo"></div>
+      <p class="tut-text" id="tutText"></p>
+      <div class="dots" id="tutDots"></div>
+      <div class="tut-actions">
+        <button class="btn ghost" id="tutBack">Back</button>
+        <button class="btn" id="tutNext">Next</button>
+        <button class="link" id="tutSkip">Skip the tutorial</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="nameScreen">
+    <div class="card">
+      <h2>What should we call you?</h2>
+      <p class="who">Your name goes on the leaderboard next to your total score.</p>
+      <div class="field">
+        <input id="nameInput" type="text" maxlength="20" autocomplete="off" aria-label="Your name" placeholder="Your name">
+        <button class="btn" id="nameBtn">Continue</button>
+      </div>
+      <p class="note bad" id="nameNote"></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="topics">
+    <div class="card">
+      <h2 id="topicsTitle">Pick a topic</h2>
+      <p class="who" id="topicsWho"></p>
+      <div class="topics" id="topicList"></div>
+      <div class="link-row">
+        <button class="link" id="topicBoard">Leaderboard</button>
+        <button class="link" id="topicHelp">How to play</button>
+        <button class="link" id="switchBtn">Switch player</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="end">
+    <div class="card">
+      <h2 id="endTitle"></h2>
+      <p class="who" id="endWho"></p>
+      <blockquote id="endQuote"></blockquote>
+      <p class="points" id="endPoints"></p>
+      <p class="points-detail" id="endDetail"></p>
+      <div class="end-actions">
+        <button class="btn" id="nextBtn">Next code</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="summary">
+    <div class="card">
+      <h2 id="sumTitle"></h2>
+      <p class="points" id="sumPoints"></p>
+      <p class="points-detail" id="sumDetail"></p>
+      <ul class="rows" id="sumRows"></ul>
+      <p class="who" id="sumLeft"></p>
+      <div class="end-actions">
+        <button class="btn" id="sumNext">Pick the next topic</button>
+        <button class="btn ghost" id="sumBoard">Leaderboard</button>
+      </div>
+      <p class="note" id="sumNote"></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="board">
+    <div class="card">
+      <h2>Leaderboard</h2>
+      <p class="who">Total score across all topics</p>
+      <ul class="rows" id="boardRows"></ul>
+      <p class="note" id="boardNote"></p>
+      <div class="end-actions">
+        <button class="btn" id="boardBack">Back</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+// Quote data is stored scrambled so the answers are not readable in the page source.
+const TOPICS = {
+  movies: { name: "Movies", ico: "🎬", when: "Released in", calls: [
+    "MBJgJR8iJmARckAQVm5sfjFDJNOd3r7skfKzxY3Q03gFShouKvqlm+e50r6BSBRZEVklJA4AKrGCytjsvOWzrKzLrpfe3O+lvt0PDA1MCmQRJT1+UgMeXHc8LjCpjbeLv5/l4/Gy1Z3Qj9jllKAcfxoAWhU6czoBJER3HTgdfy/R9pXDhePI/tSv5e/enuHv66T1Hh0=",
+    "MBJkpuabPygTPWgRRS1kPzhDJMydx/athr2pjcmZg6jyo7av0QCoo/E9bWhyDE0bTUAwJA6xlUdXSCpXUWVyD3w1A22OmbD/7JxQDi0CICEHJRd8VQ9ZU2AnYyHogLPGuZ28rr/zkIfFgs7p2q5efxpOWVQ3MiQZck1kT3pSeyHHr9THheOV/Jbilu/QwuOUqILuWWA5NXc+GCliAmgKJQ==",
+    "MBJlIRRnsIjtISYTS2JiNz1BJMWAiq+jnbHmgMaY36q25GZTPteov+Cm9ZXn9bTDx9adKgBwM+PRlJeN/umr5k8Drojb2+S0+8cSDBtDHDAZaCszagsLX3EtYWSkg6bY8IWt57/+34bFxsXmlKEbLFtMVBIzMiUdcAJ5ATRJcSuDppjViv/I/tSv9frMjaPU67jlXWIj",
+    "MBJ0KxPg0pEGNyYYS2NnP3NIYcGQirfsivShjMqO0er1p+LikkJo0/fvxeqI8JyYt+GE55TOKPvSgYL58qiLoO7P74TElfWprMBQDA0CHiscbC12BwcRWXcoLjOgifLDsYWg8b/m2JWAkcv00btefxpOWVQlfS8dcEp/AXMdbyvRr9TYheiBudjv0/XajbXQqr/yEmJSeFk5Di4oOg==",
+    "MBJkpuabPmRUMGNfRmxqNX0EKIYENXJaGAJTXUBEfngFSRsjCOFoD1lwdS47SHlIRQ9xYEUvb/eFytqh/v6i5azM+5PZx+TmrM8QRx8CByoEam5yBxQWXHsta2S7krPfuZ6rov781NDNh8Hlx+kTfwtSUhk/YSdWJg40O3xYORrGpJndivuSs4qv6w==",
+    "MBJlKxNxJmcafiYIQS1hPyVDJMXU2qSjivGjhoHe3apqWQxMQPHGtpjW1rr40rdKBF8rMRltKIOLytCp/uu59P7F4IbZwfLq+8ESSUxGDykRYit3BxcJUXErbTapgKaH8JCr5r/zkJzPiM2gw6gLfxNPUBF4MG5aRVJ5A3hSOX+Q9Kk=",
+    "MBJhLQBncn8VISYTTWZsfjIGZsuMirmqyP6uhMyTnenuo+XikkJo0/fE5uqI5buYt8SkKgBwM+7XlJeN/uer7qzF4MfNleOjtc0UDBhHAigDJT1nVQUXV3c8fWSgj6GLvJij57/hxJ/Sn4r33KAeOltXXB0ieywfJER5HTRcOSzWpdqWyLigs4r/0+jLzIbN56akYQ==",
+    "MBJ5LANwN+r0y3VfSmIpLj9HZ8HUxr+njb2uhMKZ36q25GZTPMSlm+e50ou3mqfOqUw+ORVyM/vB+ZW4sfik4ejFosfNlfijt8ITW0xQASUUKW5ySQBZUTI+by26xr3N8IKt7frhkITIh96g16gcfw9BVhF2ay0NJEB3DH8dbSGDnZXal/uV8tqhlM/XieHv46znTiReNXV4NicoOg==",
+    "MBJ6LB8iIWdUIWMNTWJ8LWwEKIYENVVDGAJgbF9jfQu46qT8gFZmASlpLnZ4HVZIXwdmYAwyabaRy5WtsO7q7uOK/ovN26GyrtwSX0xDTicZcTczRgMYWXw9emShkqGLvZC26fr2kIDSid7l170dLVUCEVYCeidYQENkBDR2dyfEvoCWuQ==",
+    "MBJkZBVnNygQN2cbBH1sMSNKYYrWhvQ8dwxgGzBtSngFYj3unF9zGlFlb1s3CFcRCBp3ZEAyKr+Ky5W8rfOp6OPG4YDFxvXmuo4PSQ9QCzBQbSszTwUKEHArayrojbfOoJir5bGwnNL0js+g56AKKxMAbhE4YSdaWQ==",
+    "MBJ5K0ZrPG4dPG8LXS1oMDcGZsGNxbioyb/qyV9jVhl4Rhs8L/TK0/ft7eqIzYBKBF8rMRltKJbDy8Wtve/q8u3E6YLelfautI4YQwlRAKbwnDozTAoWRzIma2ShlfLK8IWq+7GwnNL0idOg570dLQICYA==",
+    "MBJ0KxMiMWkasIbmUC1hPz1CaMHU3r6pyOm0ntuU0Kq25HRWJoHyrJjWw4z40reYt/mx55TOKPvSgYz+8qiLoO/F4ojC0O3mt8EPSR8CBi0DJTp2ShQcQjIhYGS8jreLp5ix7Prhw9DTksvu0OdQc1lhHTIzZWI/a01yT1lYd2z+",
+    "MBJnMRV2cmMRN3ZfV3pgMz5PasPaiPruGAJWS19jYRdqWRpGkkJ4E1h6YThWSl4HWgl3fEo0ZveB1MCp/uyj8+SK5oLAxfLmuo4LQx5QByEUJShyUwwcQjItfCu7lfLfuJTl7fz30Z6OxIai8qAcOxJOWlQYdy8XJn8=",
+    "MBJkpuabPygAOmNfT2RnOXNJYoSAwrPsn/K0h8vd06S4NglWEp7VhOK50oiZSBRZEVclJA4AKqeM18fsv/i+6f/erpTE2vSyqI4aXgNPTjAYYG5xSBNZX3Rub2S7jrvb8IWt4+uyx5nMioru271SORJOVAc+MisMdwJwBmZObW7VuY3Vg//I/tSv4vLLja/R6fTb",
+    "MBJ+JR8iOm0YPmlfUGIpMyoGaM2A3rqpyPu0gsqSlam46rQ8L+L+0/fb+OqI/pNKBF8rMB9tKJbD9dyts+Pq5P7f6cfA2vOi+8MdRwlRTiwZdm5/RhcNEGE6byqsxrPf8IWt57/m34CAicyg3KABfwhUXB0kcSMLYQw0QzZuei/RsJXXgbi7",
+    "MBJrNgdsOWQNfiYSXS1tOzJUKIS9irKjhn9GctvcluHso7atkAorTgZnbzY1mqf8jZ6NmbuxlU1Jmpn957nzrK7rrqTFw+iq+/kdXkxHHi0TJSt9QxdZR3s6ZmSpxr/KvtGy4/P52Z7HxsX1wOkdOVtUVRF2di0Xdgw0QzZ6diDG9oPdkPLGqJDolszWgqWa1w==",
+    "MBJoajIscngcPWgaBGVmMzYIJojWWkldVW1ZcR0MbgQP5Lr9iVZ4D0oIbXZ4GUxIXgdhYVguePvD2ZWusfPmoO3E6sfNleOvuNcfQAkCDycCaj1gBxARVTIjYSumyPCH8rTr1rGyxJjFxu/4wLsTci9FTwYzYTYKbUN6TUk=",
+    "MBJlJRV2MygYMyYJTX59P38GZsWW0/juxL82dAtqARcVS3l0P57VhOJrYSsuUwlECjp6bQwsa7SL0dup/uO5oO7L7YyAlfWust1cWAVPC2QRdm5nTwFZQGAheiGrkr3Z/NGk7Puy0dDLj86gwKwTPBNFTlQ/ZmILaEN4CDofNWz3s4bZjfSHqJf/lqmFzIvN7rHrWS4Kelc5AH9X",
+    "MBJjKwRtNnFUInMLVy1LPzFfJM2airfsi/K0hcqO36q25GZTIu26vOXAvYWC0BpEGVcqPwBjS/eQzdihu/jq8unZ4ZXYmaGn+8odQg9HTi0edjphUgcNX2BiLiWmgvLEvpTl5P7/34XTxsbp0r1cfVcCeR0kZjtYQEN4DH1Tfmz+",
+    "MBJkZABnN2RUJm4aBGNsOzcKJNCcz/aijfiiy8mTg6jptvOp1EBoD0qr0ZL40reYt/uk55TO+khsKJfg77PytqCIwIbazKGgsskUWAlQTjQZaSFnVEhZUWQnbzCnlPLYpZ+i7v7hw5XTyorh2q1SPltCWBU1emIOa056Cm1feCLP9pPVif/I/tSv4vTPzIbN5PTb",
+    "MBJ+LAl1cmURcnIXQS1kMT1DfYXWhvQ8dxJOGzBvb3gFVCPunF9zGl5lb1s3GUgHWhphKE0mb7mXmMKlquLq7+LProTA3OSor44QSQpWTiwRdm5nSEQKWH07emShkvLPv4arouv61dDQjsXu0edQc1lqWAYka2I1ZUVjBmZYOxM=",
+    "MBJmIQNycnEbJ3RfQn9gOz1Cd4SXxrm/jbHmidqI0fH1s+Ts1QAvTgEsPjp0BlcbTRw8KgBj+khyLEVTUz06HxsLYV8jl6334plIAE5jTicCbCN2BwYWQ2FufiW7lbfY8J6rovf7w9DGh97o0buQ3+JTHRUyZCsbYQJ/ATRJcSuDpZHXi/SC/Jvl1+vLibOY5bCmXWAYO34xFSQqFHtPGTZ8Djpo2Z/ntMfhmq/u0pXums627tGxf2J8MQ=="
+  ]},
+  games: { name: "Games", ico: "🎮", when: "Released in", calls: [
+    "MBJ5LAMiMWkfNyYWVy1ofj9PYYrWhvQ8dxFGGzBYZ3gFSBTunFx6E19lb1s3Hl0bXE5hfU4rb7SXmMKlquLq4aza4ZXY1O3mv8sKRQ9HTi0DJT5hSAkQQ3cqLiCtlaHOooXl4Oay0dDWg9j5lKAcLBJOXhEkd2I5TQw0QzZtdjzXt5iWuQ==",
+    "MBJkMISCy3tUNmcRQ2h7MSZVJNCbirGjyPyqhMGZ0KjOp/2pkBoiShtnbzY1mqf/iYGqh9zerUoTJyFp/Kb7ubScosXt26Gpt8pcQQ1MTi0eJS8zRAUPVTImbyqslfLK8JOq+7/73tDHlM/l2ukaNggAWx0kYTZYd1V5HXATO2KBgpzRxNaDu53j0rvQiuHi77riXWIj",
+    "MBJ6JRQscl8VICYRQXtsLHNFbMWazbO/xr/qyU1kU2ciSWZTI9W6vPjcbzYmUwFfBExGYElhZaeG1tyiuaqk4f7Y75PF2u/mtMhcTUxRCzYZYD0zRgYWRWZuYi2ug/LKtoWg8L/m2JWAhMXt1rpSOR5MUVp0PmA+ZU56AGFJOxM=",
+    "MBJ6KxNuNigNPXNfT2RnOj9fO4bYiCZTZBc2dCBlHjAVNgleOUxmEVh5ejY1KxgYRwJ7fElher+R2cap/v2j9OSK78fC1PKyoo4PSQ9QCzBcJSd9BwVZQmcnYCGsxrHCpIjl4+uyxJjFxsjvwL0dMltPW1QieidYd0d3QTYROwzKuafci/mN/qU=",
+    "MBJ+MAd7cmkDOm8TQS1oMDcGaM2H3rOixr/qyV9jYDxqWQVQQPHehkplfCMuXBRKaQAyZ0AlKqSA0Nqgv/jq5/7P65Pflfipro4VQkxWBiFQcSFkSUQYUn04a2SpxrbOvZ6rr/n73JzFgorj1b0aOh9SXBh4MG5aQEt3DXhSOxM=",
+    "MBJ5LAdsOSgNPXNfaWx7NzwHJOaB3vajne/mm92Vn+v/teXs2R1qSgZpLHR4HlANWk5xaV81ZrLCmpnuLhVHBHw1AVdcKhB++YJNFVQXQmYxJSNmVAwLX30jLjatkrPCvpS3ovv33JnWg9jzlKsTO1tOWAMlMiMMJFZ+CjRYdyqDuZKUkPKD/Jvsxe/Tie+apvTVSTAbKDMVGC9jCDpqCnctDDph",
+    "MBJpK0ZjcmoVIHQaSC17MT9KJYbYiCZTThckdycTSQdqWQJIkkJ7GlF+YThWSkoJSgx7fAw2Y7mE1dSiPApT86zL6pHF1uTmr8FcTUxEATxQdSd/SBBXEj5sXTCplPLtv4nltKuw7Q==",
+    "MBJrLQhrIWBUOm8SBS8lfKO5oS8ENUZFGAJUa43QwLGj9Lru5AYvAwknI3ViBFsNWoySkV9hZaWH3cfsv/7q9OTProLC0aGpvY4dDBpHHD1QZyJ8SAAAEHQnaSy8j7zM8Jyk9vz6ntKMxOfvxr0TM1trUhk0czZaWQ==",
+    "MBJqIRIiPX4RICYXQX9sf3EKJlRrDFQ8dwljCTRvHjAV5Lr9iVd4D0oIbWNyBlQHX058YUIra/eU0cGk/uvq8/zP75WM2u/muo4OQxxHQGZcJwN8VRAYXDIFYSmqh6aJjQ==",
+    "MBJ9NgdrIW1UJm4aBH58MHIEKIYWMlYjUBI2dDRdHjAVNglYFUxmEVh4fDY1KxgLQAt3eko0ZveI1tyrtv7q8+3G+5PJxqGys8tcXwdbTi0eJS8zQQUUX2c9Yj3olqfFuYKt6/H1kJfBi8+uluVQGxpSVlQFfTcUdwBL",
+    "MBJjKxJqO2YTcm8MBHl7KzYKJMGCz6S1nPWvhcjcmPu6tvO+3Qc+Vw0tYzg7SMj3juvil7vg5W9sSCpDRWVyD66GvNecgq3kj8YZDA9QCyEUJSF1BwVZWH0haiGsxrDZv4Wt5+3635/Ext7o1b1SMx5BTQd2dDAXaQJkAHtbbSHTpdTdiu6J/JDsz7WdwOP5+aXnTzMXNPHY4C4qJGhNHXx8fw==",
+    "MBJlJQIiJmdUMGNfSWgnfgBJacGbxLPsjfG1jo+RmO/ysrak0RgvAw8mOW5yBBgBXE5lekMvbfnBlJc8QRBKcBMNIhczOzfk95xMHV4OTAVQYy9gU0kNUX4lZyqvxrPHuZSrouzx2ZXOksPzwCvyxggAURUlZmIPa1ByHDRcam7Ls9TXkeiDr9jsluvTjabN7/ikEGIzO2ArWRhsAX9LDDhtAEU=",
+    "MBJ5LANsckFUJmkQTy1oMHNHdtab3falhr2yg8rcmub/o7junEy6vPjAvYWY08j3jtswJB5xO+bPmvC6u/izoPjF+YmM0vSnqcpcRQICD2QDayFkXkQVUXwqLiuuxrbZsZaq7Oyy2JHTxt7o0ekBPhZFHREucTcLYQJwAGYdayvXv4bdiv3I/tSv4vPazITU7rP0HBMdKHw0FS4qMSAIK3MnUHFRk6c=",
+    "MBJsKAoiK2cBICYdRX5sfjJUYYSWz7qjhvrmn8DchPu05LruQPHQo5jW3KTn9avKCkIjMRVwJvWimNetuuazoPjY74nf2eCyvspcWgVOAiUZa25ySQoWRXwtazfojrvY8Ies4ev9womAj8Sg1adSMBdEHQcmcyEdJFF+AHtJfDyN9NiWvv+Us9ja3/XYzpw=",
+    "MBJ/LRVncmkaNiYMTGRnO38GSc2H3rO+yNu0jsqRkOa05LruQPHtsorJwOqI/pSYt/q1+LPQnvXPioX86qbowazH74mM3O/muo4PWQVWTjMRbitgBwVZQ3siayq8xqLDqYKs4fbhxNDBgN7lxukTfw1FTw12fi0WYwJlA3FYaWCB+tb8hfaA8bTk0P6f3uPl",
+    "MBJ+KgdpNzdUAWgeT2g2f3N1asWVy72pyb/qyV9jYi5qWQZBQPHZmEplfCMuUhRKfAZ3KE8uZriN3dkuXhO5oO/Y98fDw+S0+9oUSUxQDyAZam5kTwEXVWQrfGS8jreLo4Wg4/Pm2NDIg9jvlK0bOggOH1h0XycMZU42KHFca27wuZjdgLi7"
+  ]},
+  anime: { name: "Anime", ico: "🍥", when: "First aired in", calls: [
+    "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",
+    "MBJ9KBNxcl0YJnQeBS8lfKO5ohwENURpGAJJQI3Qw7ir8Lru5AYvAwUmOW54SlcOCA98KE0ia7OG1czsuOW4oP/f/oLe3eS0tMsPAkxrGmQdYC99VESbsI4oeza8jrfZ8JOg+/D81BIge4SimOs/JltoWAY5MgMbZUZzAn1cOxM=",
+    "MBJkIkZ7PX1UNmkRxo2QKnNAbcOc3vrskfKzy8ydn2oaX+LsxwckAkplb+qIzYmYt/mz55TO+khyAZfg7Lr7s6CIz8fO2vjmucsURQJGTiMZZCBnBxMYXH49LiumxqXDqdGt9/Lz3pnUn4ro1bpSKxQAWxU1d2IMbEc2G31JeCDQ+NaYxtuSqJnu3bvQguHs46LnUmIj",
+    "MBJoKEZSIXFUGWkRQ39mMX0EKIYENUV9GAJLZ01zQqq29Kb9gUJoYkg6KHZxR0gaRw1+aUUsb7PD1dSo/vmp6enE+o7fwWNGQt1cQQlDAC0eYiJ2VBdZQ3spYGmngLSLv5/l6vbhkIDIicTlmutefShUWB04YXk/ZVZzTUk=",
+    "MBJkpuabPygeJ3ULBGwpOSZfJNOcxTRMce7mio+UlPr15vCjwk4sVgZnbzY1mqf5gIyShdzerGUTJyRGLhVsOK6GvNedgK3kmo4eTQBGTikRa256SUQYEHEvfiHog6rbvJCs7Oyy2JnTxsDv1udQc1lvUxF7QjcWZ0o2InVTOxM="
+  ]}
+};
+const unscramble = packed => {
+  const k = "k7#Qz!x9Lm@2pV", bin = atob(packed), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i) ^ k.charCodeAt(i % k.length) ^ ((i * 7) & 255);
+  return JSON.parse(new TextDecoder().decode(bytes));
+};
+// IMAGES: paste rows copied from your spreadsheet between the backticks below.
+// Copy only the Topic, Source, Character and Image link columns (A to D), NOT the Quote column,
+// or the answers would be readable here. Pictures are matched by the Source cell, e.g. "Jaws (1975)".
+// Two rows with the same source are used in the order the quotes appear in the game.
+// A quote with no image, or an image that fails to load, shows its emoji instead.
+const IMAGE_TABLE = `Movies	Star Wars (1977)	Han Solo (Harrison Ford)	https://thumb.wikimedia.org/wikipedia/en/thumb/c/c9/Han_Solo_with_Blaster.jpg/250px-Han_Solo_with_Blaster.jpg?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail
+Movies	The Godfather (1972)	Vito Corleone (Marlon Brando)	https://cdn.artphotolimited.com/images/60913d60bd40b85323893a87/1000x1000/marlon-brando-don-vito-corleone-film.jpg
+Movies	Casablanca (1942)	Rick Blaine (Humphrey Bogart)	https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS_vK24iEWVvWcZAf-37ZZGryBqxFxaUoK2a0Y3xsUhNJq-Rqjq
+Movies	Jaws (1975)	Chief Martin Brody (Roy Scheider)	https://static0.srcdn.com/wordpress/wp-content/uploads/2020/10/Chief-Brody-Jaws-3.jpg?w=1600&h=900&fit=crop
+Movies	The Terminator (1984)	The Terminator, T-800 (Arnold Schwarzenegger)	https://static.wikia.nocookie.net/terminator/images/d/d5/T1movie02-800.jpg/revision/latest?cb=20160322135926
+Movies	Apollo 13 (1995)	Jim Lovell (Tom Hanks)	https://i.pinimg.com/474x/68/be/5b/68be5bcc544c23430e4d60f31a4d9948.jpg
+Movies	Forrest Gump (1994)	Forrest Gump (Tom Hanks)	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQU9dwyFioji2dD_FYmcs_h5D6XZ2kypjXIcEiyoarIP-CaoLTHcOU9wlrM&s=10
+Movies	The Wizard of Oz (1939)	Dorothy Gale (Judy Garland)	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZk58j5qPv_jUyNpKAkhnWJySrDWGhC-pun9sfuHiDJbQAWRKjSTW5aQs&s=10
+Movies	The Dark Knight (2008)	The Joker (Heath Ledger)	https://people.com/thmb/hjBAmDvYP7ZalKg2rJunVl5kWxI=/4000x0/filters:no_upscale():max_bytes(150000):strip_icc():focal(607x410:609x412)/heath-ledger-the-dark-knight-032525-ffbf9eb357c84aeea41a8b2696f7d566.jpg
+Movies	The Sixth Sense (1999)	Cole Sear (Haley Joel Osment)	https://people.com/thmb/vlV2QuUJXunLZMBBBDPl0_dk6p4=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():focal(749x0:751x2)/Haley-Joel-Osment-sixth-sense62-072525-983c878bb0a74c22a6098d9115625a81.jpg
+Movies	Toy Story (1995)	Buzz Lightyear	https://lumiere-a.akamaihd.net/v1/images/b_toystory_characterbanner_buzz_mobile_gradient_v2_14ddf7ec.jpeg?region=0,0,640,480
+Movies	A Few Good Men (1992)	Colonel Nathan Jessup (Jack Nicholson)	https://cdn1.faroutmagazine.co.uk/uploads/1/2024/02/Jack-Nicholson-A-Few-Good-Men-Lieutenant-Colonel-Matthew-Markinson-1992-Far-Out-Magazine-1140x855.jpg
+Movies	Finding Nemo (2003)	Dory	https://static.wikia.nocookie.net/disney/images/3/36/Profile_-_Dory.png/revision/latest/thumbnail/width/360/height/360?cb=20240410214311
+Movies	Titanic (1997)	Jack Dawson (Leonardo DiCaprio)	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi9AsGI2O8wFYUIKNfC7ORdQ5EatGnWYOrtY-BH6RofWr5FTjP_7VsHvLq&s=10
+Movies	Scarface (1983)	Tony Montana (Al Pacino)	https://preview.redd.it/to-this-day-what-yall-think-of-al-pacinos-performance-as-v0-afl98yfgn3xd1.jpeg?auto=webp&s=7bb9df4e9ff16b52615f9a45b7d04e1e79b2a92f
+Movies	Gone with the Wind (1939)	Rhett Butler (Clark Gable)	https://cdn.britannica.com/81/66281-050-A1332657/Clark-Gable-Gone-with-the-Wind.jpg
+Movies	E.T. the Extra-Terrestrial (1982)	E.T.	https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/E.T._figure_at_Madame_Tussauds_London.jpg/250px-E.T._figure_at_Madame_Tussauds_London.jpg?utm_source=gl.wikipedia.org&utm_campaign=parser&utm_content=thumbnail
+Movies	Terminator 2: Judgment Day (1991)	The Terminator, T-800 (Arnold Schwarzenegger)	https://static.wikia.nocookie.net/terminator/images/d/d5/T1movie02-800.jpg/revision/latest?cb=20160322135926
+Movies	Dirty Dancing (1987)	Johnny Castle (Patrick Swayze)	https://i.pinimg.com/474x/55/3b/68/553b689ec8260b4b05b5eae8f3b2f94f.jpg
+Movies	Top Gun (1986)	Maverick and Goose (Tom Cruise, Anthony Edwards)	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnoIUrVEdzQ_yTDT58YWDGCqpppVw6z0tYQM7WEbzQyA4q9OcYyPWRDNvN&s=10
+Movies	Jerry Maguire (1996)	Rod Tidwell (Cuba Gooding Jr.) or Jerry Maguire (Tom Cruise)	https://m.media-amazon.com/images/M/MV5BN2E4YTVlYjgtZDk5My00MDk1LThlMjEtMzVlZTcxYmZmYWVhXkEyXkFqcGdeQVRoaXJkUGFydHlJbmdlc3Rpb25Xb3JrZmxvdw@@._V1_.jpg
+Movies	The Godfather Part II (1974)	Michael Corleone (Al Pacino)	https://i.guim.co.uk/img/static/sys-images/Guardian/Pix/pictures/2014/10/29/1414568178022/ce595af2-3bad-4b17-8f15-0cedc04ed3cd-1020x612.jpeg?width=465&dpr=1&s=none&crop=none
+Games	Portal (2007)	GLaDOS, or the wall graffiti (the line is not spoken)	https://static.wikia.nocookie.net/halflife7283/images/9/91/GLaDOS_2.png/revision/latest?cb=20150905205737&path-prefix=es
+Games	The Legend of Zelda (1986)	The Old Man in the cave	https://www.game-art-hq.com/wp-content/uploads/Old-Man-Legend-of-Zelda-Links-Friendlist.jpg
+Games	Fallout (1997)	Vault Boy or the power armor (the line is narration)	https://upload.wikimedia.org/wikipedia/en/6/61/Vault_Boy_artwork.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original
+Games	BioShock (2007)	Atlas	https://images.ctfassets.net/wn7ipiv9ue5v/3XvPIRrEsjF3xpeKArg6CN/7b5ed496b02c8f57732dbf625d108a5e/bioshock-tc_keyart_L_1.jpg
+Games	Diablo (1996)	Deckard Cain	https://upload.wikimedia.org/wikipedia/en/2/27/DeckardCain.jpg?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled
+Games	Super Mario Bros. (1985)	Toad (the Mushroom Retainer)	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR17Wij4q3IZFby-Ibar1m0dCAjMOAZxUyisZK3USXl7g&s=10
+Games	Star Fox 64 (1997)	Peppy Hare	https://static.wikia.nocookie.net/starfox/images/9/93/Peppy_Hare_2026.png/revision/latest?cb=20260511031146
+Games	Mortal Kombat (1992)	The dragon logo or two fighters (the line is the announcer’s)	https://i.blogs.es/4437a5/finish-hime-moryal-kombate/500_333.jpeg
+Games	Mortal Kombat (1992)	Scorpion	https://i.blogs.es/bdddb9/maxresdefault/450_1000.webp
+Games	Dark Souls (2011)	Solaire of Astora	https://static.wikia.nocookie.net/deadliestfiction/images/2/25/Solaire_Profile.png/revision/latest?cb=20211102051228
+Games	Assassin’s Creed (2007)	Altaïr Ibn-La’Ahad	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9ZjxuaCekFuAVWgEgqLMUxiCFgfy86G2tt5kuQj1qrsiIRi_jPtaChVE&s=10
+Games	Mass Effect 3 (2012)	Mordin Solus	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQitwRv6BznBTneoPoA9QgdhL2wSq6R42K-mYfqYk_v0A&s=10
+Games	The Elder Scrolls V: Skyrim (2011)	A hold guard (any Whiterun guard)	https://static.wikia.nocookie.net/spartanmazda/images/c/c0/Whiterun_Hold_Guard_Skyrim.png/revision/latest?cb=20191115123015
+Games	Zero Wing (1991)	CATS	https://static.wikia.nocookie.net/villains/images/c/c4/CATS.png/revision/latest?cb=20250114224952
+Games	Half-Life 2 (2004)	The G-Man	https://static.wikia.nocookie.net/half-life/images/4/41/G-Man_Alyx_Trailer.jpg/revision/latest?cb=20191122020607&path-prefix=en
+Games	Metal Gear Solid (1998)	Colonel Roy Campbell, or Solid Snake	https://static.wikia.nocookie.net/metalgear/images/6/66/Solid_Snake_MGS2.png/revision/latest?cb=20251203002704
+Anime	Dragon Ball Z (1989)	Vegeta	https://i.pinimg.com/736x/0f/89/70/0f8970afa64e16970684f87e6501fa9b.jpg
+Anime	One Piece (1999)	Monkey D. Luffy	https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest?cb=20260611004637
+Anime	Naruto (2002)	Naruto Uzumaki	https://www.narusakuwiki.com/images/4/40/Naruto_Uzumaki_Canon_Part_2_Profile.png
+Anime	Fate/stay night (2006)	Shirou Emiya	https://upload.wikimedia.org/wikipedia/en/2/24/ShirouEmiya2004.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original
+Anime	Fist of the North Star (1984)	Kenshiro	https://upload.wikimedia.org/wikipedia/en/9/99/Kenshiro_%28Hokuto_no_Ken_Kyukyokuban%29.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original
+Anime	Death Note (2006)	Light Yagami	https://static.wikia.nocookie.net/near_pure_evil/images/2/24/Light_Yagami.jpg/revision/latest?cb=20241230145442
+Anime	Fullmetal Alchemist (2003)	Alphonse Elric	https://static.wikia.nocookie.net/fullmetal-alchemist-database/images/f/f6/AlphonseElricEp7.png/revision/latest/scale-to-width-down/1200?cb=20121007031424
+Anime	Neon Genesis Evangelion (1995)	Shinji Ikari	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9helP_k48e1Bd-kDzf-vlC6q46UOaaXbWhNQ9v5gX9mdV4TgYFTIzhvRm&s=10
+Anime	Gurren Lagann (2007)	Kamina	https://static.wikia.nocookie.net/gurennlagann/images/3/3a/Kamina_001.jpeg/revision/latest/scale-to-width/360?cb=20150803205159
+Anime	Cowboy Bebop (1998)	Spike Spiegel (the line is the end card)	https://i.redd.it/3510jxejoav41.jpg
+Anime	Pokémon (1997)	Ash Ketchum	https://upload.wikimedia.org/wikipedia/en/e/e4/Ash_Ketchum_Journeys.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original
+Anime	Sailor Moon (1992)	Usagi Tsukino as Sailor Moon	https://i.pinimg.com/736x/b9/ee/79/b9ee79552c5cdb8fba757074c2a5db8f.jpg
+Anime	My Hero Academia (2016)	All Might	https://static.wikia.nocookie.net/omniversal-battlefield/images/5/55/All_Might_Hero_Form_Full_Body.png/revision/latest?cb=20200512144400
+Anime	Attack on Titan (2013)	Eren Yeager	https://upload-os-bbs.hoyolab.com/upload/2025/08/25/399318008/0d8f4290dd6c285856950812cce5dbaf_8877524506514596415.webp?x-oss-process=image%2Fresize%2Cs_1000%2Fauto-orient%2C0%2Finterlace%2C1%2Fformat%2Cwebp%2Fquality%2Cq_70
+Anime	Steins;Gate (2011)	Rintaro Okabe	https://static.wikia.nocookie.net/steins-gate/images/a/a5/Rintaro_Okabe_%28SG_anime%29.png/revision/latest?cb=20200222042721&path-prefix=es
+Anime	One-Punch Man (2015)	Saitama	https://i.pinimg.com/736x/b3/11/af/b311af36f06970957cacb26cb7ffdec2.jpg
+`;
+const normKey = t => t.toLowerCase().replace(/[^a-z0-9]/g, "");
+const IMAGES = {};
+for (const line of IMAGE_TABLE.split("\n")) {
+  const cellsIn = line.split("\t").map(c => c.trim()).filter(Boolean);
+  const link = cellsIn.find(c => /^https?:\/\//i.test(c));
+  const source = cellsIn.find(c => /\(\d{4}\)$/.test(c));
+  if (link && source) (IMAGES[normKey(source)] = IMAGES[normKey(source)] || []).push(link);
+}
+function setPhoto(call) {
+  const box = $("photo");
+  box.classList.remove("has-img");
+  box.textContent = call.pic;
+  const url = (IMAGES[normKey(`${call.title} (${call.year})`)] || [])[call.nth];
+  if (!url) return;
+  const img = new Image();
+  img.alt = "Picture clue";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => {
+    if (!state || state.call !== call) return;
+    box.textContent = ""; box.appendChild(img); box.classList.add("has-img");
+  };
+  img.src = url;
+}
+
+const ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+const MAX_MISS = 5, CALL_SECONDS = 180;
+const ROUND_SIZE = 5;            // quotes per topic round
+const BOARD = {                  // SimpleBoards leaderboard
+  url: "https://api.simpleboards.dev/api/",
+  key: "0b8ee32e-73f0-4e02-9f31-57f482b10ce5",
+  id: "da9329a0-d869-4fe1-9be2-08df4b04c527"
+};
+
+const $ = id => document.getElementById(id);
+let state = null, timer = null, round = null;
+
+function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
+function save(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} }
+let profile = load("ctc-profile", null);   // { id, name, scores: { topicKey: points } }
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function show(id) { $(id).classList.add("show"); }
+function hide(id) { $(id).classList.remove("show"); }
+function hideAll() { document.querySelectorAll(".overlay.show").forEach(o => o.classList.remove("show")); }
+const totalScore = () => Object.values(profile.scores).reduce((a, b) => a + b, 0);
+const unscored = () => Object.keys(TOPICS).filter(k => profile.scores[k] == null);
+const fmt = n => n.toLocaleString("en-US");
+
+/* ---------- scoring ---------- */
+// A cracked quote: 400 base, plus 3 per second left, minus 80 per mistake (never below 50). A lost quote: 0.
+function quotePoints(won, secondsLeft, mistakes) {
+  return won ? Math.max(50, 400 + 3 * secondsLeft - 80 * mistakes) : 0;
+}
+
+/* ---------- tutorial ---------- */
+const cell = (ch, n, cls = "") => `<span class="d ${cls}"><b>${ch}</b><i>${n}</i></span>`;
+const TUT = [
+  { title: "A famous quote, hidden in numbers",
+    demo: `<div class="demo-row">${cell("", "03")}${cell("", "07")}${cell("", "05")}${cell("", "05")}${cell("", "01")}</div><div class="arrow">a quote, one number per letter</div>`,
+    text: "Every round is a famous quote with its letters swapped for numbers. Work out which letter each number stands for and reveal the quote before time runs out." },
+  { title: "Same number, same letter",
+    demo: `<div class="demo-row">${cell("H", "03")}${cell("", "07")}${cell("", "05", "pick")}${cell("", "05", "twin")}${cell("O", "01")}</div><div class="demo-row"><span class="arrow">tap a blank, then type</span> <span class="kcap">L</span></div><div class="demo-row">${cell("H", "03")}${cell("", "07")}${cell("L", "05", "new")}${cell("L", "05", "new")}${cell("O", "01")}</div>`,
+    text: "Tap a blank to pick it, then type a letter or tap it on the keyboard. If you are right, every blank with that number fills in at once. A few letters are given to you at the start." },
+  { title: "A wrong guess costs a mistake, not the letter",
+    demo: `<div class="demo-row">${cell("H", "03")}${cell("", "07", "pick")}${cell("L", "05")}${cell("L", "05")}${cell("O", "01")}</div><div class="demo-row"><span class="kcap bad">A</span><span class="arrow">&nbsp;is not 07&nbsp;</span><span class="mistakes">Mistakes <span class="pips"><span class="pip hit"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></span></span></div>`,
+    text: "A wrong letter fills one of your five mistake boxes. It is crossed out only for that number, so you can still try the same letter on a different number." },
+  { title: "Use the clues, watch the clock",
+    demo: `<div class="photo">🦈🚤🏖️</div><div class="arrow">Released in 1975</div>`,
+    text: "Each code comes with a picture clue of where the quote is from, and a written hint if you want one. Hints are free. You lose the quote after five mistakes or when the three minutes run out." },
+  { title: "Score points, climb the leaderboard",
+    demo: `<div class="points">+ 742</div><div class="arrow">faster and cleaner is worth more</div>`,
+    text: `Each topic is a round of ${ROUND_SIZE} quotes. A cracked quote scores more the more time you have left and the fewer mistakes you made; a lost quote scores nothing. Each topic can be scored once, and your total across topics goes on the leaderboard.` }
+];
+let tutStep = 0, tutResume = false;
+function openTutorial() {
+  tutResume = !!(state && !state.over);
+  if (tutResume) clearInterval(timer);
+  tutStep = 0; renderTut(); hide("topics"); show("tutorial"); $("tutNext").focus();
+}
+function renderTut() {
+  const t = TUT[tutStep], last = tutStep === TUT.length - 1;
+  $("tutCount").textContent = `Step ${tutStep + 1} of ${TUT.length}`;
+  $("tutTitle").textContent = t.title;
+  $("tutDemo").innerHTML = t.demo;
+  $("tutText").textContent = t.text;
+  $("tutDots").innerHTML = TUT.map((_, i) => `<span class="${i === tutStep ? "on" : ""}"></span>`).join("");
+  $("tutBack").style.visibility = tutStep ? "visible" : "hidden";
+  $("tutNext").textContent = last ? (tutResume ? "Back to the game" : "Continue") : "Next";
+  $("tutSkip").hidden = last;
+  $("tutSkip").textContent = tutResume ? "Back to the game" : "Skip the tutorial";
+}
+function closeTutorial() {
+  save("lastcall-tutorial-seen", true);
+  hide("tutorial");
+  if (tutResume) timer = setInterval(tick, 1000);
+  else if (!profile) openName();
+  else openTopics();
+}
+$("tutNext").addEventListener("click", () => { if (tutStep < TUT.length - 1) { tutStep++; renderTut(); } else closeTutorial(); });
+$("tutBack").addEventListener("click", () => { if (tutStep) { tutStep--; renderTut(); } });
+$("tutSkip").addEventListener("click", closeTutorial);
+
+/* ---------- player name ---------- */
+function openName() {
+  hideAll(); show("nameScreen");
+  $("nameInput").value = ""; $("nameNote").textContent = "";
+  $("nameInput").focus();
+}
+function submitName() {
+  const name = $("nameInput").value.replace(/\s+/g, " ").trim();
+  if (name.length < 2) { $("nameNote").textContent = "Enter at least 2 characters."; return; }
+  const id = (crypto.randomUUID ? crypto.randomUUID() : "p-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+  profile = { id, name, scores: {} };
+  save("ctc-profile", profile);
+  openTopics();
+}
+$("nameBtn").addEventListener("click", submitName);
+$("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") submitName(); });
+
+/* ---------- topics ---------- */
+function openTopics() {
+  clearInterval(timer);
+  if (state) state.over = true;
+  round = null;
+  hideAll(); show("topics");
+  const left = unscored();
+  $("topicsTitle").textContent = left.length ? "Pick a topic" : "All topics scored";
+  $("topicsWho").textContent = `Playing as ${profile.name}. Total score: ${fmt(totalScore())}`;
+  const list = $("topicList"); list.innerHTML = "";
+  for (const [key, t] of Object.entries(TOPICS)) {
+    const done = profile.scores[key] != null;
+    const b = document.createElement("button"); b.className = "topic"; b.disabled = done;
+    b.innerHTML = `<span class="ico">${t.ico}</span><span class="name">${t.name}</span><span class="sub">${done ? `Scored: <b>${fmt(profile.scores[key])}</b>` : `${ROUND_SIZE} quotes`}</span>`;
+    b.addEventListener("click", () => startRound(key));
+    list.appendChild(b);
+  }
+  const first = list.querySelector("button:not(:disabled)") || $("topicBoard"); first.focus();
+}
+$("switchBtn").addEventListener("click", openName);
+
+/* ---------- rounds ---------- */
+function startRound(key) {
+  const calls = TOPICS[key].calls;
+  round = { key, queue: shuffle([...calls.keys()]).slice(0, ROUND_SIZE), i: 0, score: 0, results: [] };
+  hideAll(); newGame();
+}
+
+function currentCall() {
+  const calls = TOPICS[round.key].calls, idx = round.queue[round.i];
+  const [text, pic, year, hint, title] = unscramble(calls[idx]);
+  const nth = calls.slice(0, idx).filter(c => { const o = unscramble(c); return o[4] === title && o[2] === year; }).length;
+  return { text, pic, hint, title, year, nth, when: TOPICS[round.key].when + " " + year };
+}
+
+function finishRound() {
+  clearInterval(timer);
+  if (state) state.over = true;
+  const key = round.key, t = TOPICS[key], results = round.results, score = round.score;
+  profile.scores[key] = score; save("ctc-profile", profile);
+  round = null;
+  hideAll(); show("summary");
+  $("sumTitle").textContent = `${t.ico} ${t.name} complete`;
+  $("sumPoints").textContent = `${fmt(score)} points`;
+  $("sumDetail").textContent = `Cracked ${results.filter(r => r.won).length} of ${ROUND_SIZE}. Total across topics: ${fmt(totalScore())}`;
+  const rows = $("sumRows"); rows.innerHTML = "";
+  for (let i = 0; i < ROUND_SIZE; i++) {
+    const r = results[i], li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
+    a.textContent = r ? r.title : "Not played"; b.textContent = r ? fmt(r.points) : "0";
+    li.append(a, b); rows.appendChild(li);
+  }
+  const left = unscored();
+  $("sumLeft").textContent = left.length
+    ? `Not scored yet: ${left.map(k => TOPICS[k].name).join(", ")}`
+    : "You have scored every topic.";
+  $("sumNext").textContent = left.length ? "Pick the next topic" : "Back to topics";
+  $("sumNext").focus();
+  const note = $("sumNote"); note.className = "note"; note.textContent = "Saving your total to the leaderboard…";
+  submitScore().then(
+    () => { note.textContent = "Total saved to the leaderboard."; },
+    () => { note.className = "note bad"; note.textContent = "Could not reach the leaderboard. Your score is kept on this device."; }
+  );
+}
+$("sumNext").addEventListener("click", openTopics);
+
+let quitArmed = null;
+$("quitBtn").addEventListener("click", () => {
+  if (!round) return;
+  if (!quitArmed) {
+    $("quitBtn").textContent = "Click again to end and score this topic";
+    quitArmed = setTimeout(disarmQuit, 4000);
+    return;
+  }
+  disarmQuit(); finishRound();
+});
+function disarmQuit() { clearTimeout(quitArmed); quitArmed = null; $("quitBtn").textContent = "End topic"; }
+
+/* ---------- leaderboard ---------- */
+async function submitScore() {
+  const res = await fetch(BOARD.url + "entries", {
+    method: "POST",
+    headers: { "x-api-key": BOARD.key, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      leaderboardId: BOARD.id, playerId: profile.id, playerDisplayName: profile.name,
+      score: String(totalScore()), metadata: JSON.stringify(profile.scores)
+    })
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+}
+let boardFrom = "topics";
+async function openBoard(from) {
+  boardFrom = from; hideAll(); show("board");
+  const rows = $("boardRows"), note = $("boardNote");
+  rows.innerHTML = ""; note.className = "note"; note.textContent = "Loading…";
+  $("boardBack").focus();
+  try {
+    const res = await fetch(BOARD.url + "leaderboards/" + BOARD.id + "/entries", { headers: { "x-api-key": BOARD.key } });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const best = new Map();   // one row per player, highest total
+    for (const e of Array.isArray(data) ? data : []) {
+      const id = e.playerId || e.id, score = Number(e.score) || 0;
+      if (!best.has(id) || best.get(id).score < score) best.set(id, { id, name: String(e.playerDisplayName || "Player"), score });
+    }
+    const all = [...best.values()].sort((a, b) => b.score - a.score);
+    all.forEach((e, i) => e.rank = i + 1);
+    const shown = all.slice(0, 10), me = all.find(e => e.id === profile.id);
+    if (me && !shown.includes(me)) shown.push(me);
+    for (const e of shown) {
+      const li = document.createElement("li"), a = document.createElement("span"), r = document.createElement("span"), b = document.createElement("span");
+      r.className = "rank"; r.textContent = e.rank + ".";
+      a.append(r, document.createTextNode(e.name)); b.textContent = fmt(e.score);
+      if (e.id === profile.id) li.className = "me";
+      li.append(a, b); rows.appendChild(li);
+    }
+    note.textContent = all.length ? "" : "No scores yet. Finish a topic to be the first.";
+  } catch {
+    note.className = "note bad"; note.textContent = "Could not reach the leaderboard.";
+  }
+}
+$("topicBoard").addEventListener("click", () => openBoard("topics"));
+$("sumBoard").addEventListener("click", () => openBoard("summary"));
+$("boardBack").addEventListener("click", () => { if (boardFrom === "summary") { hideAll(); show("summary"); } else openTopics(); });
+
+/* ---------- game ---------- */
+function newGame() {
+  disarmQuit();
+  const call = currentCall();
+  const upper = call.text.toUpperCase();
+  const letters = shuffle([...new Set(upper.replace(/[^A-Z]/g, ""))]);
+  const code = {}; letters.forEach((l, i) => code[l] = i + 1);
+  const counts = {}; for (const ch of upper) if (code[ch]) counts[ch] = (counts[ch] || 0) + 1;
+  const giveCount = letters.length > 14 ? 3 : letters.length > 8 ? 2 : 1;
+  const repeated = shuffle(letters.filter(l => counts[l] > 1));
+  const given = (repeated.length ? repeated : shuffle([...letters])).slice(0, giveCount);
+  state = { call, upper, code, solved: new Set(given), wrongBy: {}, misses: 0, left: CALL_SECONDS, active: null, over: false };
+  setPhoto(call);
+  $("when").textContent = TOPICS[round.key].name + ". " + call.when;
+  $("progress").textContent = `Quote ${round.i + 1} of ${ROUND_SIZE} · ${fmt(round.score)} pts`;
+  $("hint").textContent = call.hint; $("hint").hidden = true; $("hintBtn").hidden = false;
+  render();
+  selectFirstOpen();
+  clearInterval(timer);
+  timer = setInterval(tick, 1000);
+  updateClock();
+}
+
+function render() {
+  const msg = $("message"); msg.innerHTML = "";
+  state.answers = {};
+  let idx = 0;
+  for (const raw of state.upper.split(" ")) {
+    const w = document.createElement("div"); w.className = "word";
+    for (const ch of raw) {
+      if (state.code[ch]) {
+        const n = state.code[ch];
+        const b = document.createElement("button");
+        b.className = "cell"; b.dataset.idx = idx; b.dataset.n = n; state.answers[idx] = ch;
+        b.setAttribute("aria-label", "Number " + n);
+        b.innerHTML = `<span class="ch"></span><span class="num">${String(n).padStart(2, "0")}</span>`;
+        b.addEventListener("click", () => select(+b.dataset.idx));
+        w.appendChild(b);
+      } else {
+        const p = document.createElement("span"); p.className = "punct"; p.textContent = ch; w.appendChild(p);
+      }
+      idx++;
+    }
+    idx++;
+    msg.appendChild(w);
+  }
+  const keys = $("keys"); keys.innerHTML = "";
+  ROWS.forEach(r => {
+    const row = document.createElement("div"); row.className = "row";
+    for (const l of r) {
+      const k = document.createElement("button"); k.className = "key"; k.textContent = l; k.dataset.l = l;
+      k.addEventListener("click", () => guess(l));
+      row.appendChild(k);
+    }
+    keys.appendChild(row);
+  });
+  refresh();
+}
+
+const L = c => state.answers[c.dataset.idx];
+function cells() { return [...document.querySelectorAll(".cell")]; }
+
+function refresh() {
+  const act = state.active != null ? cells().find(c => +c.dataset.idx === state.active) : null;
+  const actN = act ? act.dataset.n : null;
+  cells().forEach(c => {
+    const ok = state.solved.has(L(c));
+    c.querySelector(".ch").textContent = ok ? L(c) : "";
+    c.classList.toggle("done", ok);
+    c.classList.toggle("active", c === act);
+    c.classList.toggle("same", !ok && c !== act && c.dataset.n === actN);
+  });
+  document.querySelectorAll(".key").forEach(k => {
+    const l = k.dataset.l;
+    const triedHere = !!(actN && state.wrongBy[actN] && state.wrongBy[actN].has(l));
+    k.disabled = state.over || state.solved.has(l) || triedHere;
+    k.classList.toggle("wrong", triedHere && !state.over);
+  });
+  const pips = $("pips"); pips.innerHTML = "";
+  for (let i = 0; i < MAX_MISS; i++) { const p = document.createElement("span"); p.className = "pip" + (i < state.misses ? " hit" : ""); pips.appendChild(p); }
+}
+
+function select(idx) {
+  if (state.over) return;
+  const c = cells().find(c => +c.dataset.idx === idx);
+  if (!c || state.solved.has(L(c))) return;
+  state.active = idx; refresh();
+}
+
+function selectFirstOpen(after = -1) {
+  const open = cells().filter(c => !state.solved.has(L(c)));
+  const pick = open.find(c => +c.dataset.idx > after) || open[0];
+  state.active = pick ? +pick.dataset.idx : null;
+  refresh();
+}
+
+function guess(l) {
+  if (state.over || state.active == null || state.solved.has(l)) return;
+  const c = cells().find(c => +c.dataset.idx === state.active);
+  const tried = state.wrongBy[c.dataset.n] || (state.wrongBy[c.dataset.n] = new Set());
+  if (tried.has(l)) return;
+  if (L(c) === l) {
+    state.solved.add(l);
+    if (cells().every(x => state.solved.has(L(x)))) return finish(true);
+    selectFirstOpen(state.active);
+  } else {
+    state.misses++; tried.add(l);
+    c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash");
+    refresh();
+    if (state.misses >= MAX_MISS) finish(false, "Too many wrong letters.");
+  }
+}
+
+function tick() {
+  state.left--; updateClock();
+  if (state.left <= 0) finish(false, "Time ran out.");
+}
+function updateClock() {
+  const m = Math.floor(state.left / 60), s = state.left % 60;
+  const t = $("clock"); t.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  t.classList.toggle("low", state.left <= 30);
+  $("bar").style.width = (state.left / CALL_SECONDS * 100) + "%";
+}
+
+function finish(won, why) {
+  state.over = true; clearInterval(timer); disarmQuit();
+  state.active = null;
+  refresh();
+  const call = state.call, left = Math.max(0, state.left), misses = state.misses;
+  const points = quotePoints(won, left, misses);
+  round.score += points;
+  round.results.push({ title: `${call.title} (${call.year})`, won, points });
+  const last = round.i === ROUND_SIZE - 1;
+  $("endTitle").textContent = won ? "Code cracked" : why;
+  $("endWho").textContent = `${call.pic}  ${call.title} (${call.year})`;
+  $("endQuote").textContent = "“" + call.text + "”";
+  $("endPoints").textContent = `+ ${fmt(points)} points`;
+  $("endDetail").textContent = won
+    ? `${left}s left, ${misses} ${misses === 1 ? "mistake" : "mistakes"}. Topic score: ${fmt(round.score)}`
+    : `No points for a lost quote. Topic score: ${fmt(round.score)}`;
+  $("nextBtn").textContent = last ? "See topic score" : "Next code";
+  $("progress").textContent = `Quote ${round.i + 1} of ${ROUND_SIZE} · ${fmt(round.score)} pts`;
+  setTimeout(() => { if (state.call === call && round) { show("end"); $("nextBtn").focus(); } }, won ? 600 : 300);
+}
+
+function overlayOpen() { return !!document.querySelector(".overlay.show"); }
+
+document.addEventListener("keydown", e => {
+  if (!state || state.over || overlayOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if (/^[A-Z]$/.test(k)) { e.preventDefault(); guess(k); return; }
+  const open = cells().filter(c => !state.solved.has(L(c)));
+  if (!open.length) return;
+  const i = open.findIndex(c => +c.dataset.idx === state.active);
+  if (e.key === "ArrowRight") select(+open[(i + 1) % open.length].dataset.idx);
+  if (e.key === "ArrowLeft") select(+open[(i - 1 + open.length) % open.length].dataset.idx);
+});
+
+$("hintBtn").addEventListener("click", () => { $("hint").hidden = false; $("hintBtn").hidden = true; });
+$("nextBtn").addEventListener("click", () => {
+  hide("end");
+  round.i++;
+  if (round.i >= ROUND_SIZE) finishRound(); else newGame();
+});
+$("helpBtn").addEventListener("click", openTutorial);
+$("topicHelp").addEventListener("click", openTutorial);
+
+if (!load("lastcall-tutorial-seen", false)) openTutorial();
+else if (!profile) openName();
+else openTopics();
+})();
+</script>
+</body>
+</html>
